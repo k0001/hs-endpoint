@@ -1,0 +1,58 @@
+cabal-version: 2.4
+name: route
+version: 0.1
+license: Apache-2.0
+license-file: LICENSE
+extra-source-files: README.md CHANGELOG.md
+author: Renzo Carbonara
+maintainer: renλren.zone
+copyright: Renzo Carbonara, 2025
+category: Web
+build-type: Simple
+synopsis: URL route encoding and decoding
+description: URL route encoding and decoding
+homepage: https://github.com/k0001/hs-route
+bug-reports: https://github.com/k0001/hs-route/issues
+tested-with: GHC==9.8, GHC==9.10, GHC==9.12
+
+common basic
+  default-language: GHC2021
+  build-depends: base == 4.*
+  default-extensions:
+    BlockArguments
+    DefaultSignatures
+    DerivingStrategies
+    DerivingVia
+    DuplicateRecordFields
+    LambdaCase
+    OverloadedRecordDot
+    OverloadedStrings
+    ViewPatterns
+
+library
+  import: basic
+  ghc-options: -O2 -Wall
+  hs-source-dirs: lib
+  exposed-modules:
+    Route
+  other-modules:
+    Route.Class
+  build-depends:
+    bytestring,
+    containers,
+    contravariant,
+    free,
+    profunctors,
+    text,
+    time,
+    transformers,
+
+test-suite test
+  import: basic
+  type: exitcode-stdio-1.0
+  hs-source-dirs: test
+  main-is: Main.hs
+  ghc-options: -threaded -with-rtsopts=-N
+  build-depends:
+    route,
+
