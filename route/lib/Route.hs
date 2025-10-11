@@ -3,6 +3,8 @@
 module Route {--}
    ( -- * Route
     Route (..)
+   , routeToHttpTypes
+   , routeFromHttpTypes
 
     -- * Codec
    , Codec
@@ -70,6 +72,28 @@ instance Semigroup Route where
 
 instance Monoid Route where
    mempty = Route{path = mempty, query = mempty}
+
+-- | Compatible with the path and query string representation used by
+-- "Network.HTTP.Types.URI".
+routeFromHttpTypes :: ([T.Text], [(T.Text, Maybe T.Text)]) -> Route
+routeFromHttpTypes (p, qs) =
+   Route
+      { path = p
+      , query = Map.fromListWith (flip (<>)) do
+         (k, yv) <- qs
+         pure (k, pure (maybe "" id yv))
+      }
+
+-- | Compatible with the path and query string representation used by
+-- "Network.HTTP.Types.URI".
+routeToHttpTypes :: Route -> ([T.Text], [(T.Text, Maybe T.Text)])
+routeToHttpTypes = \r ->
+   ( r.path
+   , do
+      (k, vs) <- Map.toAscList r.query
+      v <- NEL.toList vs
+      pure (k, if T.null v then Nothing else Just v)
+   )
 
 --------------------------------------------------------------------------------
 

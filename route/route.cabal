@@ -46,6 +46,8 @@ library
     text,
     time,
     transformers,
+    uuid-types,
+
 
 test-suite test
   import: basic
@@ -54,5 +56,12 @@ test-suite test
   main-is: Main.hs
   ghc-options: -threaded -with-rtsopts=-N
   build-depends:
+    containers,
+    hedgehog,
     route,
-
+    tasty,
+    tasty-hedgehog,
+    tasty-hunit,
+    text,
+    time,
+    uuid-types,

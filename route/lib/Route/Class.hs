@@ -8,8 +8,10 @@ module Route.Class
 import Control.Monad
 import Data.Int
 import Data.Text qualified as T
+import Data.Text.Lazy qualified as TL
 import Data.Time qualified as Time
 import Data.Time.Format.ISO8601 qualified as Time
+import Data.UUID.Types qualified as UUID
 import Data.Word
 import Numeric.Natural
 import Text.Read (readMaybe)
@@ -24,26 +26,72 @@ class ToPath i where
    {-# INLINE toPath #-}
    toPath = T.pack . show
 
+-- | Like 'ToQuery'.
 instance ToPath T.Text where
    {-# INLINE toPath #-}
-   toPath = id
+   toPath = toQuery
 
+-- | Like 'ToQuery'.
+instance ToPath TL.Text where
+   {-# INLINE toPath #-}
+   toPath = toQuery
+
+-- | Like 'ToQuery'.
 instance ToPath String where
    {-# INLINE toPath #-}
-   toPath = T.pack
+   toPath = toQuery
 
+-- | Like 'ToQuery'.
+instance ToPath Char where
+   {-# INLINE toPath #-}
+   toPath = toQuery
+
+-- | Like 'ToQuery'.
 instance ToPath Int
+
+-- | Like 'ToQuery'.
 instance ToPath Int8
+
+-- | Like 'ToQuery'.
 instance ToPath Int16
+
+-- | Like 'ToQuery'.
 instance ToPath Int32
+
+-- | Like 'ToQuery'.
 instance ToPath Int64
+
+-- | Like 'ToQuery'.
 instance ToPath Integer
+
+-- | Like 'ToQuery'.
 instance ToPath Word
+
+-- | Like 'ToQuery'.
 instance ToPath Word8
+
+-- | Like 'ToQuery'.
 instance ToPath Word16
+
+-- | Like 'ToQuery'.
 instance ToPath Word32
+
+-- | Like 'ToQuery'.
 instance ToPath Word64
+
+-- | Like 'ToQuery'.
 instance ToPath Natural
+
+-- | Like 'ToQuery'.
+instance ToPath Double
+
+-- | Like 'ToQuery'.
+instance ToPath Float
+
+-- | Like 'ToQuery'.
+instance ToPath UUID.UUID where
+   toPath = toQuery
+   {-# INLINE toPath #-}
 
 -- | Like 'ToQuery'.
 instance ToPath Time.UTCTime where
@@ -94,26 +142,72 @@ class FromPath o where
    {-# INLINE fromPath #-}
    fromPath = note "No parse" . readMaybe . T.unpack
 
+-- | Like 'FromQuery'.
 instance FromPath T.Text where
    {-# INLINE fromPath #-}
-   fromPath = Right
+   fromPath = fromQuery
 
+-- | Like 'FromQuery'.
+instance FromPath TL.Text where
+   {-# INLINE fromPath #-}
+   fromPath = fromQuery
+
+-- | Like 'FromQuery'.
 instance FromPath String where
    {-# INLINE fromPath #-}
-   fromPath = Right . T.unpack
+   fromPath = fromQuery
 
+-- | Like 'FromQuery'.
+instance FromPath Char where
+   {-# INLINE fromPath #-}
+   fromPath = fromQuery
+
+-- | Like 'FromQuery'.
 instance FromPath Int
+
+-- | Like 'FromQuery'.
 instance FromPath Int8
+
+-- | Like 'FromQuery'.
 instance FromPath Int16
+
+-- | Like 'FromQuery'.
 instance FromPath Int32
+
+-- | Like 'FromQuery'.
 instance FromPath Int64
+
+-- | Like 'FromQuery'.
 instance FromPath Integer
+
+-- | Like 'FromQuery'.
 instance FromPath Word
+
+-- | Like 'FromQuery'.
 instance FromPath Word8
+
+-- | Like 'FromQuery'.
 instance FromPath Word16
+
+-- | Like 'FromQuery'.
 instance FromPath Word32
+
+-- | Like 'FromQuery'.
 instance FromPath Word64
+
+-- | Like 'FromQuery'.
 instance FromPath Natural
+
+-- | Like 'FromQuery'.
+instance FromPath Double
+
+-- | Like 'FromQuery'.
+instance FromPath Float
+
+-- | Like 'FromQuery'.
+instance FromPath UUID.UUID where
+   fromPath = fromQuery
+   {-# INLINE fromPath #-}
 
 -- | Like 'FromQuery'.
 instance FromPath Time.UTCTime where
@@ -171,9 +265,18 @@ instance ToQuery T.Text where
    toQuery = id
    {-# INLINE toQuery #-}
 
+instance ToQuery TL.Text where
+   toQuery = TL.toStrict
+   {-# INLINE toQuery #-}
+
 instance ToQuery String where
    toQuery = T.pack
    {-# INLINE toQuery #-}
+
+-- | Like 'ToQuery'.
+instance ToQuery Char where
+   {-# INLINE toQuery #-}
+   toQuery = T.singleton
 
 instance ToQuery Int
 instance ToQuery Int8
@@ -187,6 +290,12 @@ instance ToQuery Word16
 instance ToQuery Word32
 instance ToQuery Word64
 instance ToQuery Natural
+instance ToQuery Double
+instance ToQuery Float
+
+instance ToQuery UUID.UUID where
+   toQuery = UUID.toText
+   {-# INLINE toQuery #-}
 
 -- | 'Time.ISO8601'. @yyyy-mm-ddThh:mm:ss/[.ssssssssssss]/+00:00@
 instance ToQuery Time.UTCTime where
@@ -245,9 +354,21 @@ instance FromQuery T.Text where
    fromQuery = Right
    {-# INLINE fromQuery #-}
 
-instance FromQuery String where
-   fromQuery = \t -> Right (T.unpack t)
+instance FromQuery TL.Text where
    {-# INLINE fromQuery #-}
+   fromQuery = Right . TL.fromStrict
+
+-- | Like 'FromQuery'.
+instance FromQuery String where
+   {-# INLINE fromQuery #-}
+   fromQuery = Right . T.unpack
+
+-- | Like 'FromQuery'.
+instance FromQuery Char where
+   {-# INLINE fromQuery #-}
+   fromQuery = \t -> case T.uncons t of
+      Just (c, rest) | T.null rest -> Right c
+      _ -> Left "No parse"
 
 instance FromQuery Int
 instance FromQuery Int8
@@ -261,6 +382,12 @@ instance FromQuery Word16
 instance FromQuery Word32
 instance FromQuery Word64
 instance FromQuery Natural
+instance FromQuery Double
+instance FromQuery Float
+
+instance FromQuery UUID.UUID where
+   fromQuery = note "No UUID" . UUID.fromText
+   {-# INLINE fromQuery #-}
 
 -- | Like for 'Time.ZonedTime'. Compatible with 'ToQuery'.
 instance FromQuery Time.UTCTime where

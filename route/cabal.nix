@@ -1,5 +1,6 @@
 { mkDerivation, base, bytestring, containers, contravariant, free
-, lib, profunctors, text, time, transformers
+, hedgehog, lib, profunctors, tasty, tasty-hedgehog, tasty-hunit
+, text, time, transformers, uuid-types
 }:
 mkDerivation {
   pname = "route";
@@ -7,9 +8,12 @@ mkDerivation {
   src = ./.;
   libraryHaskellDepends = [
     base bytestring containers contravariant free profunctors text time
-    transformers
+    transformers uuid-types
   ];
-  testHaskellDepends = [ base ];
+  testHaskellDepends = [
+    base containers hedgehog tasty tasty-hedgehog tasty-hunit text time
+    uuid-types
+  ];
   homepage = "https://github.com/k0001/hs-route";
   description = "URL route encoding and decoding";
   license = lib.licenses.asl20;
