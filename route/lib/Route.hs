@@ -25,6 +25,7 @@ module Route {--}
    , Decoder
    , decoder
    , decode
+   , Err(..)
 
     -- * Encoder
    , Encoder
@@ -75,6 +76,10 @@ instance Monoid Route where
 
 -- | Compatible with the path and query string representation used by
 -- "Network.HTTP.Types.URI".
+--
+-- @
+-- 'routeFromHttpTypes' :: (['T.Text'], "Network.HTTP.Types.URI".'Network.HTTP.Types.URI.QueryText') -> 'Route'
+-- @
 routeFromHttpTypes :: ([T.Text], [(T.Text, Maybe T.Text)]) -> Route
 routeFromHttpTypes (p, qs) =
    Route
@@ -86,6 +91,10 @@ routeFromHttpTypes (p, qs) =
 
 -- | Compatible with the path and query string representation used by
 -- "Network.HTTP.Types.URI".
+--
+-- @
+-- 'routeToHttpTypes' :: 'Route' -> (['T.Text'], "Network.HTTP.Types.URI".'Network.HTTP.Types.URI.QueryText')
+-- @
 routeToHttpTypes :: Route -> ([T.Text], [(T.Text, Maybe T.Text)])
 routeToHttpTypes = \r ->
    ( r.path
@@ -296,7 +305,6 @@ data Err
      ErrPath Word T.Text
    | -- | Error parsing the 'Route' @query@ element at the given key.
      ErrQuery T.Text T.Text
-   | ErrOther T.Text
    deriving stock (Eq, Show)
 
 instance Exception Err
