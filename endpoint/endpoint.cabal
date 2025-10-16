@@ -1,5 +1,5 @@
 cabal-version: 2.4
-name: route
+name: endpoint
 version: 0.1
 license: Apache-2.0
 license-file: LICENSE
@@ -9,10 +9,10 @@ maintainer: renλren.zone
 copyright: Renzo Carbonara, 2025
 category: Web
 build-type: Simple
-synopsis: URL route encoding and decoding
-description: URL route encoding and decoding
-homepage: https://github.com/k0001/hs-route
-bug-reports: https://github.com/k0001/hs-route/issues
+synopsis: URL endpoint encoding and decoding
+description: URL endpoint encoding and decoding
+homepage: https://github.com/k0001/hs-endpoint
+bug-reports: https://github.com/k0001/hs-endpoint/issues
 tested-with: GHC==9.8, GHC==9.10, GHC==9.12
 
 common basic
@@ -34,14 +34,14 @@ library
   ghc-options: -O2 -Wall
   hs-source-dirs: lib
   exposed-modules:
-    Route
+    Endpoint
   other-modules:
-    Route.Class
+    Endpoint.Class
   build-depends:
     bytestring,
     containers,
-    contravariant,
     free,
+    http-types,
     profunctors,
     text,
     time,
@@ -56,9 +56,11 @@ test-suite test
   main-is: Main.hs
   ghc-options: -threaded -with-rtsopts=-N
   build-depends:
+    bytestring,
+    case-insensitive,
     containers,
+    endpoint,
     hedgehog,
-    route,
     tasty,
     tasty-hedgehog,
     tasty-hunit,

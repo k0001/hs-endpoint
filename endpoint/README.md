@@ -1,6 +1,6 @@
-# route
+# endpoint
 
-URL route encoding and decoding.
+HTTP endpoint encoding and decoding.
 
 * Copyright © Renzo Carbonara, 2025.
 

@@ -1,5 +1,5 @@
 packages:
-  route/
+  endpoint/
 
 --
 profiling: True

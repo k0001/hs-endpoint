@@ -3,11 +3,15 @@ module Main (main) where
 import Control.Monad
 import Control.Monad.IO.Class
 import Data.Bits
+import Data.ByteString qualified as B
+import Data.CaseInsensitive qualified as CI
 import Data.Fixed
 import Data.Functor.Contravariant
 import Data.Int
+import Data.List.NonEmpty qualified as NEL
 import Data.Map.Strict qualified as Map
 import Data.Maybe
+import Data.String
 import Data.Text qualified as T
 import Data.Text.Lazy qualified as TL
 import Data.Time qualified as Time
@@ -28,7 +32,7 @@ import Test.Tasty.Hedgehog qualified as Tasty
 import Test.Tasty.Runners (TestTree)
 import Test.Tasty.Runners qualified as Tasty
 
-import Route qualified as R
+import Endpoint qualified as E
 
 --------------------------------------------------------------------------------
 main :: IO ()
@@ -41,14 +45,27 @@ main = do
       $ tree
 
 tree :: TestTree
-tree = testGroup "Route" [treeRoute, treeQueryPath]
+tree =
+   testGroup
+      "Endpoint"
+      [ treeHttpTypes
+      , treeQueryPath
+      , treeHeader
+      ]
 
-treeRoute :: TestTree
-treeRoute =
-   testProperty "routeToHttpTypes/routeFromHttpTypes" $
-      H.property do
-         r0 <- H.forAll route
-         r0 H.=== R.routeFromHttpTypes (R.routeToHttpTypes r0)
+treeHttpTypes :: TestTree
+treeHttpTypes =
+   testGroup
+      "treeHttpTypes"
+      [ testProperty "queryToHttpTypes/queryFromHttpTypes" $
+         H.property do
+            r0 <- H.forAll query
+            r0 H.=== E.queryFromHttpTypes (E.queryToHttpTypes r0)
+      , testProperty "headerToHttpTypes/headerFromHttpTypes" $
+         H.property do
+            r0 <- H.forAll header
+            r0 H.=== E.headerFromHttpTypes (E.headerToHttpTypes r0)
+      ]
 
 treeQueryPath :: TestTree
 treeQueryPath =
@@ -88,10 +105,10 @@ treeQueryPath =
        . ( Typeable a
          , Eq a
          , Show a
-         , R.ToQuery a
-         , R.FromQuery a
-         , R.ToPath a
-         , R.FromPath a
+         , E.ToQuery a
+         , E.FromQuery a
+         , E.ToPath a
+         , E.FromPath a
          )
       => H.Gen a
       -> TestTree
@@ -99,17 +116,58 @@ treeQueryPath =
       testGroup
          (tyConName (typeRepTyCon (typeRep ga)))
          [ testProperty "query" $ H.property do
-            a0 <- H.forAll ga
-            case R.toQuery a0 of
-               t -> case R.fromQuery t of
-                  Right a1 -> a0 H.=== a1
-                  Left e -> liftIO $ fail $ T.unpack e
+            a <- H.forAll ga
+            Just a H.=== E.fromQuery (E.toQuery a)
          , testProperty "path" $ H.property do
-            a0 <- H.forAll ga
-            case R.toPath a0 of
-               t -> case R.fromPath t of
-                  Right a1 -> a0 H.=== a1
-                  Left e -> liftIO $ fail $ T.unpack e
+            a <- H.forAll ga
+            Just a H.=== E.fromPath (E.toPath a)
+         ]
+
+treeHeader :: TestTree
+treeHeader =
+   testGroup
+      "ToHeader/FromHeader"
+      [ t @UUID.UUID uuid4
+      , t @Int $ H.integral HR.constantBounded
+      , t @Int8 $ H.integral HR.constantBounded
+      , t @Int16 $ H.integral HR.constantBounded
+      , t @Int32 $ H.integral HR.constantBounded
+      , t @Int64 $ H.integral HR.constantBounded
+      , t @Word $ H.integral HR.constantBounded
+      , t @Word8 $ H.integral HR.constantBounded
+      , t @Word16 $ H.integral HR.constantBounded
+      , t @Word32 $ H.integral HR.constantBounded
+      , t @Word64 $ H.integral HR.constantBounded
+      , t @Word64 $ H.integral HR.constantBounded
+      , t @Natural $ H.integral $ HR.constant 0 maxNatural
+      , t @Integer $ H.integral $ HR.constantFrom 0 minInteger maxInteger
+      , t @Time.UTCTime $ genUTCTime (HR.constantFrom epochUTCTime minUTCTime maxUTCTime)
+      , t @Time.LocalTime $ Time.utcToLocalTime Time.utc <$> genUTCTime (HR.constantFrom epochUTCTime minUTCTime maxUTCTime)
+      , t @Time.CalendarDiffDays $ calendarDiffDays
+      , t @Time.CalendarDiffTime $ Time.calendarTimeDays <$> calendarDiffDays
+      , t @Time.TimeOfDay $ timeOfDay
+      , t @Time.TimeZone $ timeZone
+      , t @Time.Day $ day
+      , t @Double $ H.double (HR.constantFrom 0 (fromIntegral minInteger) (fromIntegral maxInteger))
+      , t @Float $ H.float (HR.constantFrom 0 (fromIntegral minInteger) (fromIntegral maxInteger))
+      ]
+  where
+   t
+      :: forall a
+       . ( Typeable a
+         , Eq a
+         , Show a
+         , E.ToHeader a
+         , E.FromHeader a
+         )
+      => H.Gen a
+      -> TestTree
+   t ga =
+      testGroup
+         (tyConName (typeRepTyCon (typeRep ga)))
+         [ testProperty "header" $ H.property do
+            a <- H.forAll ga
+            Just a H.=== E.fromHeader (E.toHeader a)
          ]
 
 uuid4 :: (H.MonadGen m) => m UUID.UUID
@@ -175,13 +233,24 @@ posixPicoSecondsToUTCTime :: Integer -> Time.UTCTime
 posixPicoSecondsToUTCTime =
    Time.posixSecondsToUTCTime . Time.secondsToNominalDiffTime . MkFixed
 
-route :: (H.MonadGen m) => m R.Route
-route = do
-   ps <- H.list (HR.constant 0 9) (H.text (HR.constant 0 9) H.unicode)
-   qs <-
-      Map.fromListWith (<>) <$> do
-         ks <- H.list (HR.constant 0 9) (H.text (HR.constant 0 3) H.unicode)
-         forM ks \k -> do
-            vs <- H.nonEmpty (HR.constant 1 9) (H.text (HR.constant 0 9) H.unicode)
-            pure (k, vs)
-   pure R.Route{R.path = ps, R.query = qs}
+path :: (H.MonadGen m) => m [T.Text]
+path = H.list (HR.constant 0 9) (H.text (HR.constant 0 9) H.unicode)
+
+query :: (H.MonadGen m) => m (Map.Map T.Text (NEL.NonEmpty T.Text))
+query =
+   Map.fromListWith (<>) <$> do
+      ks <- H.list (HR.constant 0 9) (H.text (HR.constant 0 3) H.unicode)
+      forM ks \k -> do
+         vs <- H.nonEmpty (HR.constant 1 9) (H.text (HR.constant 0 9) H.unicode)
+         pure (k, vs)
+
+header
+   :: forall m
+    . (H.MonadGen m)
+   => m (Map.Map (CI.CI B.ByteString) (NEL.NonEmpty B.ByteString))
+header =
+   Map.fromListWith (<>) <$> do
+      ks <- H.list (HR.constant 0 9) (CI.mk <$> H.bytes (HR.constant 1 9))
+      forM ks \k -> do
+         vs <- H.nonEmpty (HR.constant 1 9) (H.bytes (HR.constant 1 9))
+         pure (k, vs)

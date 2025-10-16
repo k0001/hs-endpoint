@@ -4,8 +4,8 @@
 !flake.lock
 !*.nix
 !cabal.project
-!route/LICENSE
-!route/*.cabal
-!route/*.md
-!route/**/*.hs
+!endpoint/LICENSE
+!endpoint/*.cabal
+!endpoint/*.md
+!endpoint/**/*.hs
 

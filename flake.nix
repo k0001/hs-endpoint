@@ -53,7 +53,7 @@
           {
             haskellProjects = mapListToAttrs (ghc: {
               basePackages = pkgs.haskell.packages.${ghc};
-              settings.route = {
+              settings.endpoint = {
                 check = true;
                 haddock = true;
                 libraryProfiling = true;
@@ -70,8 +70,8 @@
                 tools = hp: { inherit (pkgs) cabal2nix; };
               };
             }) ghcVersions;
-            packages.default = self'.packages.ghc9122-route;
-            packages.doc = self'.packages.ghc9122-route.doc;
+            packages.default = self'.packages.ghc9122-endpoint;
+            packages.doc = self'.packages.ghc9122-endpoint.doc;
             devShells.default = self'.devShells.ghc9122;
           };
       }
