@@ -1,5 +1,5 @@
 packages:
-  endpoint/
+  waypoint/
 
 --
 profiling: True

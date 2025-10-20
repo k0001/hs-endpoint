@@ -4,8 +4,8 @@
 
 -- | Usually, you don't need to import this module unless
 -- you are trying to reuse some of 'Query''s underlying primitives.
--- Just import "Endpoint" instead.
-module Endpoint.Query
+-- Just import "Waypoint" instead.
+module Waypoint.Query
    ( -- * QueryValue
     QueryValue (..)
    , ToQueryValue (..)

@@ -4,8 +4,8 @@
 
 -- | Usually, you don't need to import this module unless
 -- you are trying to reuse some of 'Path''s underlying primitives.
--- Just import "Endpoint" instead.
-module Endpoint.Path
+-- Just import "Waypoint" instead.
+module Waypoint.Path
    ( -- * PathValue
     PathValue (..)
    , ToPathValue (..)

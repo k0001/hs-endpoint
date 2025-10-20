@@ -1,6 +1,6 @@
-# endpoint
+# waypoint
 
-HTTP endpoint encoding and decoding.
+HTTP waypoint encoding and decoding.
 
 * Copyright © Renzo Carbonara, 2025.
 

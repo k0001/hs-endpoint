@@ -4,7 +4,7 @@
 , witherable
 }:
 mkDerivation {
-  pname = "endpoint";
+  pname = "waypoint";
   version = "0.1";
   src = ./.;
   libraryHaskellDepends = [
@@ -15,7 +15,7 @@ mkDerivation {
     base bytestring case-insensitive containers hedgehog tasty
     tasty-hedgehog tasty-hunit text time uuid-types
   ];
-  homepage = "https://github.com/k0001/hs-endpoint";
-  description = "URL endpoint encoding and decoding";
+  homepage = "https://github.com/k0001/hs-waypoint";
+  description = "URL waypoint encoding and decoding";
   license = lib.licenses.asl20;
 }

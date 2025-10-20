@@ -1,5 +1,5 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
-module Endpoint.Instances () where
+module Waypoint.Instances () where
 
 import Control.Applicative
 import Control.Monad
@@ -19,9 +19,9 @@ import Data.Word
 import Numeric.Natural
 import Prelude
 
-import Endpoint.Header
-import Endpoint.Path
-import Endpoint.Query
+import Waypoint.Header
+import Waypoint.Path
+import Waypoint.Query
 
 --------------------------------------------------------------------------------
 

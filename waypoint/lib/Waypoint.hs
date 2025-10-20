@@ -1,7 +1,7 @@
 {-# LANGUAGE StrictData #-}
 {-# LANGUAGE NoFieldSelectors #-}
 
-module Endpoint
+module Waypoint
    ( -- * Query
     Q.QueryCodec
 
@@ -50,7 +50,7 @@ module Endpoint
    )
 where
 
-import Endpoint.Header qualified as H
-import Endpoint.Instances ()
-import Endpoint.Path qualified as P
-import Endpoint.Query qualified as Q
+import Waypoint.Header qualified as H
+import Waypoint.Instances ()
+import Waypoint.Path qualified as P
+import Waypoint.Query qualified as Q

@@ -1,5 +1,5 @@
 cabal-version: 2.4
-name: endpoint
+name: waypoint
 version: 0.1
 license: Apache-2.0
 license-file: LICENSE
@@ -9,10 +9,10 @@ maintainer: renλren.zone
 copyright: Renzo Carbonara, 2025
 category: Web
 build-type: Simple
-synopsis: URL endpoint encoding and decoding
-description: URL endpoint encoding and decoding
-homepage: https://github.com/k0001/hs-endpoint
-bug-reports: https://github.com/k0001/hs-endpoint/issues
+synopsis: URL waypoint encoding and decoding
+description: URL waypoint encoding and decoding
+homepage: https://github.com/k0001/hs-waypoint
+bug-reports: https://github.com/k0001/hs-waypoint/issues
 tested-with: GHC==9.8, GHC==9.10, GHC==9.12
 
 common basic
@@ -36,12 +36,12 @@ library
   ghc-options: -O2 -Wall
   hs-source-dirs: lib
   exposed-modules:
-    Endpoint
-    Endpoint.Query
-    Endpoint.Header
-    Endpoint.Path
+    Waypoint
+    Waypoint.Query
+    Waypoint.Header
+    Waypoint.Path
   other-modules:
-    Endpoint.Instances
+    Waypoint.Instances
   build-depends:
     bytestring,
     containers,
@@ -65,7 +65,7 @@ test-suite test
     bytestring,
     case-insensitive,
     containers,
-    endpoint,
+    waypoint,
     hedgehog,
     tasty,
     tasty-hedgehog,

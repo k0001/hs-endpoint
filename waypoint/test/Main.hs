@@ -32,7 +32,7 @@ import Test.Tasty.Hedgehog qualified as Tasty
 import Test.Tasty.Runners (TestTree)
 import Test.Tasty.Runners qualified as Tasty
 
-import Endpoint qualified as E
+import Waypoint qualified as E
 
 --------------------------------------------------------------------------------
 main :: IO ()
@@ -47,7 +47,7 @@ main = do
 tree :: TestTree
 tree =
    testGroup
-      "Endpoint"
+      "Waypoint"
       [ treeQueryPath
       , treeHeader
       ]
