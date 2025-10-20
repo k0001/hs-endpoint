@@ -9,8 +9,8 @@ maintainer: renλren.zone
 copyright: Renzo Carbonara, 2025
 category: Web
 build-type: Simple
-synopsis: URL waypoint encoding and decoding
-description: URL waypoint encoding and decoding
+synopsis: HTTP path, query and headers encoding and decoding
+descpition: HTTP path, query and headers encoding and decoding
 homepage: https://github.com/k0001/hs-waypoint
 bug-reports: https://github.com/k0001/hs-waypoint/issues
 tested-with: GHC==9.8, GHC==9.10, GHC==9.12
