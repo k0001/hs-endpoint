@@ -23,10 +23,12 @@ common basic
     DefaultSignatures
     DerivingStrategies
     DerivingVia
+    DeriveAnyClass
     DuplicateRecordFields
     LambdaCase
     OverloadedRecordDot
     OverloadedStrings
+    RecordWildCards
     ViewPatterns
 
 library
@@ -35,8 +37,11 @@ library
   hs-source-dirs: lib
   exposed-modules:
     Endpoint
+    Endpoint.Query
+    Endpoint.Header
+    Endpoint.Path
   other-modules:
-    Endpoint.Class
+    Endpoint.Instances
   build-depends:
     bytestring,
     containers,
@@ -47,6 +52,7 @@ library
     time,
     transformers,
     uuid-types,
+    witherable,
 
 
 test-suite test

@@ -48,29 +48,14 @@ tree :: TestTree
 tree =
    testGroup
       "Endpoint"
-      [ treeHttpTypes
-      , treeQueryPath
+      [ treeQueryPath
       , treeHeader
-      ]
-
-treeHttpTypes :: TestTree
-treeHttpTypes =
-   testGroup
-      "treeHttpTypes"
-      [ testProperty "queryToHttpTypes/queryFromHttpTypes" $
-         H.property do
-            r0 <- H.forAll query
-            r0 H.=== E.queryFromHttpTypes (E.queryToHttpTypes r0)
-      , testProperty "headerToHttpTypes/headerFromHttpTypes" $
-         H.property do
-            r0 <- H.forAll header
-            r0 H.=== E.headerFromHttpTypes (E.headerToHttpTypes r0)
       ]
 
 treeQueryPath :: TestTree
 treeQueryPath =
    testGroup
-      "ToQuery/FromQuery - ToPath/FromPath"
+      "ToQueryValue/FromQueryValue - ToPathValue/FromPathValue"
       [ t @UUID.UUID uuid4
       , t @Int $ H.integral HR.constantBounded
       , t @Int8 $ H.integral HR.constantBounded
@@ -105,10 +90,10 @@ treeQueryPath =
        . ( Typeable a
          , Eq a
          , Show a
-         , E.ToQuery a
-         , E.FromQuery a
-         , E.ToPath a
-         , E.FromPath a
+         , E.ToQueryValue a
+         , E.FromQueryValue a
+         , E.ToPathValue a
+         , E.FromPathValue a
          )
       => H.Gen a
       -> TestTree
@@ -117,16 +102,16 @@ treeQueryPath =
          (tyConName (typeRepTyCon (typeRep ga)))
          [ testProperty "query" $ H.property do
             a <- H.forAll ga
-            Just a H.=== E.fromQuery (E.toQuery a)
+            Just a H.=== E.fromQueryValue (E.toQueryValue a)
          , testProperty "path" $ H.property do
             a <- H.forAll ga
-            Just a H.=== E.fromPath (E.toPath a)
+            Just a H.=== E.fromPathValue (E.toPathValue a)
          ]
 
 treeHeader :: TestTree
 treeHeader =
    testGroup
-      "ToHeader/FromHeader"
+      "ToHeaderValue/FromHeaderValue"
       [ t @UUID.UUID uuid4
       , t @Int $ H.integral HR.constantBounded
       , t @Int8 $ H.integral HR.constantBounded
@@ -157,8 +142,8 @@ treeHeader =
        . ( Typeable a
          , Eq a
          , Show a
-         , E.ToHeader a
-         , E.FromHeader a
+         , E.ToHeaderValue a
+         , E.FromHeaderValue a
          )
       => H.Gen a
       -> TestTree
@@ -167,7 +152,7 @@ treeHeader =
          (tyConName (typeRepTyCon (typeRep ga)))
          [ testProperty "header" $ H.property do
             a <- H.forAll ga
-            Just a H.=== E.fromHeader (E.toHeader a)
+            Just a H.=== E.fromHeaderValue (E.toHeaderValue a)
          ]
 
 uuid4 :: (H.MonadGen m) => m UUID.UUID
