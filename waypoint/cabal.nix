@@ -16,6 +16,6 @@ mkDerivation {
     tasty-hedgehog tasty-hunit text time uuid-types
   ];
   homepage = "https://github.com/k0001/hs-waypoint";
-  description = "URL waypoint encoding and decoding";
+  description = "Bidirectional URL path, URL query string and HTTP headers codecs";
   license = lib.licenses.asl20;
 }

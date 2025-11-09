@@ -1,56 +1,91 @@
-{-# LANGUAGE StrictData #-}
-{-# LANGUAGE NoFieldSelectors #-}
-
+-- | This library provides vocabulary to generate encoders and decoders for URL
+-- path segments, URL query strings and HTTP headers, from a single
+-- bidirectional definition.
+--
+-- For example, consider this 'QueryCodec':
+--
+-- @
+-- example :: 'QueryCodec' ('Int', ['String']) ('Int', ['String'])
+-- example = '(,)' '<$>' 'query' \"id\" 'fst'
+--                '<*>' 'queryMany' \"tag\" 'snd'
+-- @
+--
+-- We could encode a @('Int', ['String'])@ pair into a
+-- 'Network.HTTP.Types.QueryText' (from the @http-types@ library):
+--
+-- @
+-- > 'queryEncode' example (4, [])
+-- /[(\"id\", Just \"4\")]/
+--
+-- > 'queryEncode' example (5, ["hello", "world"])
+-- /[(\"id\", Just \"5\"), (\"tag\", Just \"hello\"), (\"tag\", Just \"world\")]/
+-- @
+--
+-- Or we could decode a 'Network.HTTP.Types.QueryText' (from the @http-types@
+-- library) into a @('Int', ['String'])@ pair:
+--
+-- @
+-- > 'queryDecode' example [(\"id\", Just \"4\")]
+-- /Right ((4, []), [])/
+--
+-- > 'queryDecode' example [(\"id\", Just \"5\"), (\"tag\", Just \"hello\"), (\"tag\", Just \"world\")]
+-- /Right ((5, [\"hello\", \"world\"]), [])/
+-- @
+--
+-- Similarly, with 'HeaderCodec' and 'PathCodec'.
+--
+-- Usually, this is the only module you have to import from this library,
+-- unless you are trying to extend its vocabulary somehow.
 module Waypoint
    ( -- * Query
-    Q.QueryCodec
+    QueryCodec
 
     -- ** Introduction
-   , Q.query
-   , Q.queryMaybe
-   , Q.querySome
-   , Q.queryMany
-   , Q.ToQueryValue (..)
-   , Q.FromQueryValue (..)
+   , query
+   , queryMaybe
+   , querySome
+   , queryMany
+   , ToQueryValue (..)
+   , FromQueryValue (..)
 
     -- ** Elimination
-   , Q.queryEncode
-   , Q.queryDecode
-   , Q.ErrQuery (..)
+   , queryEncode
+   , queryDecode
+   , ErrQuery (..)
 
     -- * Header
-   , H.HeaderCodec
+   , HeaderCodec
 
     -- ** Introduction
-   , H.header
-   , H.headerMaybe
-   , H.headerSome
-   , H.headerMany
-   , H.ToHeaderValue (..)
-   , H.FromHeaderValue (..)
+   , header
+   , headerMaybe
+   , headerSome
+   , headerMany
+   , ToHeaderValue (..)
+   , FromHeaderValue (..)
 
     -- ** Elimination
-   , H.headerEncode
-   , H.headerDecode
-   , H.ErrHeader (..)
+   , headerEncode
+   , headerDecode
+   , ErrHeader (..)
 
     -- * Path
-   , P.PathCodec
+   , PathCodec
 
     -- ** Introduction
-   , P.path
-   , P.pathLiteral
-   , P.ToPathValue (..)
-   , P.FromPathValue (..)
+   , path
+   , pathLiteral
+   , ToPathValue (..)
+   , FromPathValue (..)
 
     -- ** Elimination
-   , P.pathEncode
-   , P.pathDecode
-   , P.ErrPath (..)
+   , pathEncode
+   , pathDecode
+   , ErrPath (..)
    )
 where
 
-import Waypoint.Header qualified as H
+import Waypoint.Header
 import Waypoint.Instances ()
-import Waypoint.Path qualified as P
-import Waypoint.Query qualified as Q
+import Waypoint.Path
+import Waypoint.Query

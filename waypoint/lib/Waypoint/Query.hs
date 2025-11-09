@@ -1,9 +1,9 @@
 {-# LANGUAGE StrictData #-}
 {-# LANGUAGE NoFieldSelectors #-}
-{-# OPTIONS_HADDOCK hide #-}
+{-# OPTIONS_HADDOCK not-home #-}
 
 -- | Usually, you don't need to import this module unless
--- you are trying to reuse some of 'Query''s underlying primitives.
+-- you are trying to reuse some of 'QueryCodec'\'s underlying primitives.
 -- Just import "Waypoint" instead.
 module Waypoint.Query
    ( -- * QueryValue
@@ -21,7 +21,7 @@ module Waypoint.Query
     -- * QueryF
    , QueryF (..)
    , queryFDecode
-   , QueryFDecodeState
+   , QueryFDecodeState(..)
    , queryFEncode
    , queryFKeys
 
@@ -135,7 +135,7 @@ instance W.Filterable (QueryF i) where
 
 --------------------------------------------------------------------------------
 
--- | See 'queryDecodeF'.
+-- | See 'queryFDecode'.
 data QueryFDecodeState = QueryFDecodeState
    { seen :: Set.Set T.Text
    -- ^ Previously seen keys.
@@ -188,6 +188,13 @@ data ErrQuery
 
 --------------------------------------------------------------------------------
 
+-- | Bidirectional codec for encoding an @i@ into a URL query string, and
+-- decoding a URL query string into an @o@.
+--
+-- This works for @application/x-www-form-urlencoded@ bodies too.
+--
+-- Use 'query', 'queryMaybe', 'querySome', 'queryMany' and 'Applicative' to
+-- construct.
 newtype QueryCodec i o = QueryCodec (Ap (QueryF i) o)
    deriving newtype (Functor, Applicative)
 

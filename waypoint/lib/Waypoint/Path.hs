@@ -1,9 +1,9 @@
 {-# LANGUAGE StrictData #-}
 {-# LANGUAGE NoFieldSelectors #-}
-{-# OPTIONS_HADDOCK hide #-}
+{-# OPTIONS_HADDOCK not-home #-}
 
 -- | Usually, you don't need to import this module unless
--- you are trying to reuse some of 'Path''s underlying primitives.
+-- you are trying to reuse some of 'PathCodec'\'s underlying primitives.
 -- Just import "Waypoint" instead.
 module Waypoint.Path
    ( -- * PathValue
@@ -14,6 +14,7 @@ module Waypoint.Path
     -- * PathF
    , PathF (..)
    , pathFDecode
+   , PathFDecodeState (..)
    , pathFEncode
 
     -- * PathCodec
@@ -64,15 +65,15 @@ pathValue = PathValue toPathValue fromPathValue
 
 --------------------------------------------------------------------------------
 
--- | This datatype seems useless, and it is, but naming things is hard, so we
--- add this name for consistency with 'QueryF' and 'HeaderF'. Also, we will add
--- metadata here someday.
+-- | This datatype seems useless, seeing as we could use 'PathValue' directly.
+-- But naming things is hard, so we add this name for consistency with 'QueryF'
+-- and 'HeaderF'. Also, we will add metadata here someday.
 newtype PathF i o = PathF
    { segment :: PathValue i o
    }
    deriving newtype (Functor, Profunctor, W.Filterable)
 
--- | See 'pathDecodeF'.
+-- | See 'pathFDecode'.
 data PathFDecodeState = PathFDecodeState
    { index :: Int
    -- ^ Next index.
@@ -99,6 +100,10 @@ pathFEncode p = \i -> Endo (p.segment.encode i :)
 
 --------------------------------------------------------------------------------
 
+-- | Bidirectional codec for encoding an @i@ into URL path segments, and
+-- decoding URL path segments into an @o@.
+--
+-- Use 'path', 'pathLiteral' and 'Applicative' to construct.
 newtype PathCodec i o = PathCodec (Ap (PathF i) o)
    deriving newtype (Functor, Applicative)
 
@@ -113,7 +118,7 @@ pathEncode (PathCodec af) = flip appEndo [] . runAp_ pathFEncode af
 --
 -- Parses from left to right, returning leftover segments, if any.
 pathDecode :: PathCodec i o -> [T.Text] -> Either ErrPath (o, [T.Text])
-pathDecode = \(PathCodec af) -> \ !ts0 -> do
+pathDecode = \(PathCodec af) -> \ts0 -> do
    let s0 = PathFDecodeState{index = 0, input = ts0}
    (o, s1) <- runStateT (runAp (StateT . pathFDecode) af) s0
    pure (o, s1.input)

@@ -1,6 +1,6 @@
 # waypoint
 
-HTTP waypoint encoding and decoding.
+Bidirectional URL path, URL query string and HTTP headers codecs, for Haskell.
 
 * Copyright © Renzo Carbonara, 2025.
 

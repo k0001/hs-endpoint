@@ -1,9 +1,9 @@
 {-# LANGUAGE StrictData #-}
 {-# LANGUAGE NoFieldSelectors #-}
-{-# OPTIONS_HADDOCK hide #-}
+{-# OPTIONS_HADDOCK not-home #-}
 
 -- | Usually, you don't need to import this module unless
--- you are trying to reuse some of 'Header''s underlying primitives.
+-- you are trying to reuse some of 'HeaderCodec'\'s underlying primitives.
 -- Just import "Waypoint" instead.
 module Waypoint.Header
    ( -- * HeaderValue
@@ -21,7 +21,7 @@ module Waypoint.Header
     -- * HeaderF
    , HeaderF (..)
    , headerFDecode
-   , HeaderFDecodeState
+   , HeaderFDecodeState(..)
    , headerFEncode
    , headerFNames
 
@@ -65,7 +65,11 @@ import Prelude
 -- (e.g., the @v@ in @k: v@).
 data HeaderValue i o = HeaderValue
    { encode :: i -> B.ByteString
+   -- ^ __WARNING__: The 'B.ByteString' is literally as it is on the header
+   -- value.
    , decode :: B.ByteString -> Maybe o
+   -- ^ __WARNING__: The 'B.ByteString' is literally as it is on the header
+   -- value.
    }
 
 instance W.Filterable (HeaderValue i) where
@@ -189,6 +193,11 @@ data ErrHeader
 
 --------------------------------------------------------------------------------
 
+-- | Bidirectional codec for encoding an @i@ into HTTP headers, and decoding
+-- HTTP headers into an @o@.
+--
+-- Use 'header', 'headerMaybe', 'headerSome', 'headerMany' and 'Applicative' to
+-- construct.
 newtype HeaderCodec i o = HeaderCodec (Ap (HeaderF i) o)
    deriving newtype (Functor, Applicative)
 
