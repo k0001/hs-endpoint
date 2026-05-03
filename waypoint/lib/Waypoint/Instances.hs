@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
+
 module Waypoint.Instances () where
 
 import Control.Applicative
@@ -15,6 +16,7 @@ import Data.Text.Lazy.Builder qualified as TB
 import Data.Time qualified as Time
 import Data.Time.Format.ISO8601 qualified as Time
 import Data.UUID.Types qualified as UUID
+import Data.Void
 import Data.Word
 import Numeric.Natural
 import Prelude
@@ -129,6 +131,9 @@ instance ToHeaderValue Time.TimeZone where
    toHeaderValue = fromString . Time.iso8601Show
    {-# INLINE toHeaderValue #-}
 
+instance ToHeaderValue Void where
+   toHeaderValue = absurd
+
 --------------------------------------------------------------------------------
 
 instance FromHeaderValue B.ByteString where
@@ -202,6 +207,9 @@ instance FromHeaderValue Time.CalendarDiffTime where
 instance FromHeaderValue Time.TimeZone where
    fromHeaderValue = T.decodeASCII' >=> fromQueryValue
    {-# INLINE fromHeaderValue #-}
+
+instance FromHeaderValue Void where
+   fromHeaderValue = const Nothing
 
 --------------------------------------------------------------------------------
 
@@ -289,6 +297,9 @@ instance ToPathValue Time.TimeZone where
    toPathValue = toQueryValue
    {-# INLINE toPathValue #-}
 
+instance ToPathValue Void where
+   toPathValue = absurd
+
 --------------------------------------------------------------------------------
 
 instance FromPathValue T.Text where
@@ -371,6 +382,9 @@ instance FromPathValue Time.TimeZone where
    fromPathValue = fromQueryValue
    {-# INLINE fromPathValue #-}
 
+instance FromPathValue Void where
+   fromPathValue = const Nothing
+
 --------------------------------------------------------------------------------
 
 instance ToQueryValue T.Text where
@@ -451,6 +465,9 @@ instance ToQueryValue Time.CalendarDiffTime where
 instance ToQueryValue Time.TimeZone where
    toQueryValue = T.pack . Time.iso8601Show
    {-# INLINE toQueryValue #-}
+
+instance ToQueryValue Void where
+   toQueryValue = absurd
 
 --------------------------------------------------------------------------------
 
@@ -549,3 +566,6 @@ instance FromQueryValue Time.CalendarDiffTime where
 instance FromQueryValue Time.TimeZone where
    fromQueryValue = fromQueryValue >=> Time.iso8601ParseM
    {-# INLINE fromQueryValue #-}
+
+instance FromQueryValue Void where
+   fromQueryValue = const Nothing
