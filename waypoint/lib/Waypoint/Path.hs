@@ -104,12 +104,21 @@ pathFEncode p = \i -> Endo (p.segment.encode i :)
 -- decoding URL path segments into an @o@.
 --
 -- Use 'path', 'pathLiteral' and 'Applicative' to construct.
-newtype PathCodec i o = PathCodec (Ap (PathF i) o)
-   deriving newtype (Functor, Applicative)
+newtype PathCodec i o = PathCodec (Ap (PathF i) (Maybe o))
+
+instance Functor (PathCodec i) where
+   fmap f (PathCodec a) = PathCodec $ fmap (fmap f) a
+
+instance Applicative (PathCodec i) where
+   pure = PathCodec . pure . Just
+   PathCodec f <*> PathCodec a = PathCodec $ (<*>) <$> f <*> a
 
 instance Profunctor PathCodec where
    rmap = fmap
    lmap f (PathCodec a) = PathCodec $ hoistAp (lmap f) a
+
+instance W.Filterable (PathCodec i) where
+   mapMaybe f (PathCodec a) = PathCodec $ fmap (>>= f) a
 
 pathEncode :: PathCodec i o -> i -> [T.Text]
 pathEncode (PathCodec af) = flip appEndo [] . runAp_ pathFEncode af
@@ -120,12 +129,16 @@ pathEncode (PathCodec af) = flip appEndo [] . runAp_ pathFEncode af
 pathDecode :: PathCodec i o -> [T.Text] -> Either ErrPath (o, [T.Text])
 pathDecode = \(PathCodec af) -> \ts0 -> do
    let s0 = PathFDecodeState{index = 0, input = ts0}
-   (o, s1) <- runStateT (runAp (StateT . pathFDecode) af) s0
-   pure (o, s1.input)
+   (yo, s1) <- runStateT (runAp (StateT . pathFDecode) af) s0
+   case yo of
+      Just o -> pure (o, s1.input)
+      Nothing -> Left ErrFilter
 
 data ErrPath
    = -- | Error parsing the path element at the given index.
      ErrPath Int
+   | -- | The output was deliberately filtered out (e.g., through 'mapMaybe').
+     ErrFilter
    deriving stock (Eq, Show)
 
 instance Exception ErrPath
@@ -138,12 +151,13 @@ path
    => (i -> x)
    -- ^ @'path' f == 'lmap' f ('path' 'id')@, provided just for convenience.
    -> PathCodec i o
-path f = PathCodec $ liftAp $ PathF $ lmap f pathValue
+path f = PathCodec $ liftAp $ PathF $ dimap f Just pathValue
 
 -- | Literal segment in a URL path.
 pathLiteral :: T.Text -> PathCodec i ()
 pathLiteral t =
-   PathCodec $ liftAp $ PathF $ PathValue (const t) \x -> guard (x == t)
+   PathCodec $ liftAp $ PathF $ PathValue (const t) \x ->
+      Just <$> guard (x == t)
 
 --------------------------------------------------------------------------------
 
